@@ -1,1 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AURA</title>
 
+<style>
+:root{
+ --dark:#0F172A;
+ --blue:#2563EB;
+ --neon:#22D3EE;
+ --yellow:#FACC15;
+ --light:#F8FAFC;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+ font-family:Arial, sans-serif;
+ background:var(--dark);
+ color:var(--light);
+ transition:.3s;
+}
+
+.navbar{
+ display:flex;
+ justify-content:space-between;
+ padding:20px;
+ background:rgba(255,255,255,0.05);
+ backdrop-filter:blur(10px);
+}
+
+.hero{
+ height:80vh;
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ text-align:center;
+ background:linear-gradient(135deg,var(--blue),var(--neon));
+ animation:fadeUp 1s ease;
+}
+
+button{
+ padding:12px 25px;
+ border:none;
+ border-radius:12px;
+ background:var(--yellow);
+ color:#000;
+ cursor:pointer;
+ transition:.3s;
+}
+
+button:hover{
+ transform:translateY(-3px);
+}
+
+.container{
+ width:90%;
+ max-width:400px;
+ margin:40px auto;
+ display:flex;
+ flex-direction:column;
+ gap:10px;
+}
+
+input{
+ padding:10px;
+ border-radius:8px;
+ border:none;
+}
+
+.hidden{display:none}
+
+@keyframes fadeUp{
+ from{opacity:0; transform:translateY(20px)}
+ to{opacity:1; transform:translateY(0)}
+}
+</style>
+</head>
+
+<body>
+
+<header class="navbar">
+ <div>AURA</div>
+ <div id="navArea"></div>
+</header>
+
+<section id="home" class="hero">
+ <h1>Experiência Digital Elevada</h1>
+ <p>Login local com armazenamento automático</p>
+ <button onclick="showLogin()">Começar</button>
+</section>
+
+<section id="auth" class="container hidden">
+ <h2>Login</h2>
+ <input type="text" id="user" placeholder="Usuário">
+ <input type="password" id="pass" placeholder="Senha">
+ <button onclick="login()">Entrar</button>
+
+ <h3>Cadastro</h3>
+ <input type="text" id="newUser" placeholder="Novo usuário">
+ <input type="password" id="newPass" placeholder="Senha (mín 6)">
+ <button onclick="register()">Cadastrar</button>
+</section>
+
+<section id="dashboard" class="container hidden">
+ <h2>Bem-vindo</h2>
+ <p id="userDisplay"></p>
+ <button onclick="logout()">Sair</button>
+</section>
+
+<script>
+
+/* ==========================
+   SISTEMA DE ARMAZENAMENTO
+========================== */
+
+function save(key,data){
+ localStorage.setItem(key, JSON.stringify(data));
+}
+
+function get(key){
+ return JSON.parse(localStorage.getItem(key));
+}
+
+/* ==========================
+   NAVEGAÇÃO
+========================== */
+
+function showLogin(){
+ document.getElementById("home").classList.add("hidden");
+ document.getElementById("auth").classList.remove("hidden");
+}
+
+/* ==========================
+   AUTENTICAÇÃO
+========================== */
+
+function register(){
+ const user=document.getElementById("newUser").value;
+ const pass=document.getElementById("newPass").value;
+
+ if(pass.length < 6){
+  alert("Senha muito curta");
+  return;
+ }
+
+ let users=get("users") || [];
+
+ if(users.find(u=>u.user===user)){
+  alert("Usuário já existe");
+  return;
+ }
+
+ users.push({user,pass});
+ save("users",users);
+
+ alert("Cadastro realizado!");
+}
+
+function login(){
+ const user=document.getElementById("user").value;
+ const pass=document.getElementById("pass").value;
+
+ let users=get("users") || [];
+ const found=users.find(u=>u.user===user && u.pass===pass);
+
+ if(found){
+  save("loggedUser",found);
+  loadDashboard();
+ } else{
+  alert("Login inválido");
+ }
+}
+
+function logout(){
+ localStorage.removeItem("loggedUser");
+ location.reload();
+}
+
+/* ==========================
+   DASHBOARD
+========================== */
+
+function loadDashboard(){
+ document.getElementById("auth").classList.add("hidden");
+ document.getElementById("home").classList.add("hidden");
+ document.getElementById("dashboard").classList.remove("hidden");
+
+ const user=get("loggedUser");
+ document.getElementById("userDisplay").innerText=user.user;
+}
+
+/* ==========================
+   AUTO LOGIN
+========================== */
+
+if(get("loggedUser")){
+ loadDashboard();
+}
+
+/* ==========================
+   EASTER EGG SECRETO
+========================== */
+
+let code=[];
+const secret=["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+
+document.addEventListener("keydown",e=>{
+ code.push(e.key);
+ if(code.length>secret.length) code.shift();
+
+ if(JSON.stringify(code)===JSON.stringify(secret)){
+  document.body.style.background="black";
+  alert("Modo Visionário Ativado");
+ }
+});
+
+</script>
+
+</body>
+</html>
